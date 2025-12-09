@@ -83,8 +83,10 @@ module.exports = (env, argv) => {
   }
 
   if (mode === 'production') {
-    config.optimization.minimizer = [new TerserPlugin()];
-    config.optimization.minimize = true;
+    config.optimization = {
+      minimize: true,
+      minimizer: [new TerserPlugin()],
+    };
   }
 
   return config;
