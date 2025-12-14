@@ -49,7 +49,8 @@ export const InvalidEntries = ({
                     </a>
                   </TableCell>
                   <TableCell>
-                    Invalid voucher number format. Expected format: BC25-xxxxx
+                    Invalid voucher number format. Expected format: BC2x-xxxxx
+                    (2025 and later)
                   </TableCell>
                 </TableRow>
               ))}
