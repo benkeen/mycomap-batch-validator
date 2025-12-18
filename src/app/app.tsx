@@ -141,20 +141,74 @@ export const App = () => {
       </AppBar>
 
       <div style={{ margin: '0 auto', maxWidth: '1000px' }}>
-        <h1>Batch Observations</h1>
-
+        <h1>CSV Generation and Data Check</h1>
         <p>
-          This script creates a downloadable CSV of your BC MycoMap
-          observations. It gathers all fungi and slime mould records you've
-          tagged with the{' '}
-          <a href='https://www.inaturalist.org/projects/mycomap-bc-a-dna-sequencing-project'>
-            MycoMap BC project
+          This script generates a downloadable CSV file of your{' '}
+          <a
+            href='https://www.inaturalist.org/projects/mycomap-bc-a-dna-sequencing-project'
+            target='_blank'
+            rel='noreferrer'
+          >
+            MycoMap BC
           </a>{' '}
-          on iNaturalist, limited to the date range you specify.
+          observations. This will locate all your fungi and slime mould
+          observations{' '}
+          <i>
+            already added to the{' '}
+            <a
+              href='https://www.inaturalist.org/observations?project_id=250590'
+              target='_blank'
+              rel='noreferrer'
+            >
+              MycoMap BC project
+            </a>
+          </i>{' '}
+          on iNaturalist.
         </p>
-
+        <p>
+          Please choose dates that will capture all the collections being sent
+          in an individual shipment.
+        </p>
+        <p>
+          After you generate and download your CSV file, please upload it when
+          filling out the{' '}
+          <a
+            href='https://docs.google.com/forms/d/e/1FAIpQLSchGgJWGMvG56rE5xaub8UX6fiYS4rIOkh86YLZuZ4nRGK3Vg/viewform?usp=dialog'
+            target='_blank'
+            rel='noreferrer'
+          >
+            google form for project submissions
+          </a>
+          . You will see an option to upload at the bottom of the form.
+        </p>
+        <p>
+          Completing this process allows you to check the accuracy of the
+          voucher numbers on your observations and saves the MycoMap BC team the
+          time spent entering your numbers by hand. Thank you!
+        </p>
+        <p>
+          Please repeat both the google form and CSV generation process for each
+          separate shipment you send.
+        </p>
+        <p></p>
+        Additional notes:
+        <ul>
+          <li>
+            If your shipment involves collections from multiple collectors, each
+            collector should generate a separate CSV, and separately fill out
+            the google form linked above.
+          </li>
+          <li>
+            The same applies for specimens dropped off or handed off in person,
+            please generate a CSV and complete the google form.
+          </li>
+          <li>
+            Please contact Elora at{' '}
+            <a href='mailto:eloraadamson@uvic.ca'>eloraadamson@uvic.ca</a> if
+            you have any questions or issues with the process. Thank you!
+          </li>
+        </ul>
         <UserFields onSubmit={handleRequestData} disabled={loading} />
-
         {getPageContent()}
       </div>
     </>
