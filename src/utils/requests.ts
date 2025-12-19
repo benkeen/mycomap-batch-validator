@@ -2,6 +2,18 @@ import { throttledQueue } from 'throttled-queue';
 import qs from 'query-string';
 import * as constants from '../constants';
 
+export type ObservationRequestResult = {
+  error: string | null;
+  results: ObservationData[];
+};
+
+export type ObservationData = {
+  id: number;
+  observedOn: string;
+  user: string;
+  voucherNumber: string;
+};
+
 export const getObservations = async (
   userId: string,
   fromDate: string,
@@ -12,24 +24,38 @@ export const getObservations = async (
     interval: 1050,
   });
 
-  const { results, totalResults } = await throttle(() =>
+  const { results, totalResults, error } = await throttle(() =>
     getDataPacket(userId, fromDate, toDate, 1)
   );
 
+  if (error) {
+    return {
+      error,
+      results: [],
+    };
+  }
+
+  let foundError = null;
   if (totalResults >= constants.INAT_REQUEST_RESULTS_PER_PAGE) {
     const totalPages = Math.ceil(
       totalResults / constants.INAT_REQUEST_RESULTS_PER_PAGE
     );
     for (let page = 2; page <= totalPages; page++) {
       // eslint-disable-next-line no-await-in-loop
-      const { results: pageResults } = await throttle(() =>
+      const { results: pageResults, error: pageError } = await throttle(() =>
         getDataPacket(userId, fromDate, toDate, page)
       );
+
+      if (pageError) {
+        foundError = pageError;
+        break;
+      }
+
       results.push(...pageResults);
     }
   }
 
-  return results;
+  return { error: foundError, results };
 };
 
 export const getDataPacket = async (
@@ -39,7 +65,7 @@ export const getDataPacket = async (
   page: number
 ) => {
   const apiParams = {
-    user_id: userId,
+    user_id: userId.trim(),
     d1: fromDate,
     d2: toDate,
     project_id: constants.INAT_PROJECT_ID,
@@ -52,8 +78,24 @@ export const getDataPacket = async (
   const paramsStr = qs.stringify(apiParams);
   const apiUrl = `${constants.BASE_INAT_URL}?${paramsStr}`;
 
-  const response = await fetch(apiUrl);
-  const rawData = await response.json();
+  let rawData;
+  let error = null;
+  try {
+    const response = await fetch(apiUrl);
+    rawData = await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      error = error.message;
+    }
+  }
+
+  if (rawData.error) {
+    return {
+      totalResults: 0,
+      results: [],
+      error: rawData.error,
+    };
+  }
 
   // in order to be added to the project, we know the observatio has the voucher number field. It's also unique: you *can* add
   // a new field called "Voucher Number(s)", but iNat automatically adds a " :" suffix, so it'll be ignored here
@@ -88,5 +130,6 @@ export const getDataPacket = async (
   return {
     totalResults: rawData.total_results,
     results: trimmedData,
+    error,
   };
 };

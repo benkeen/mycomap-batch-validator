@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { UserFields } from '../fields/UserFields';
 import { getObservations } from '../utils/requests';
+import type { ObservationData } from '../utils/requests';
 import { DataTable } from '../dataTable/DataTable';
 import { findInvalidVoucherEntries } from '../utils/data';
 import type { InvalidData } from '../utils/data';
@@ -12,10 +13,12 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import Alert from '@mui/material/Alert';
 
 export const App = () => {
-  const [data, setData] = React.useState([]);
+  const [data, setData] = React.useState<ObservationData[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [voucherNumFormatCheck, setVoucherNumFormatCheck] =
     React.useState<boolean>(true);
   const [invalidData, setInvalidData] = React.useState<InvalidData>({
@@ -38,16 +41,20 @@ export const App = () => {
 
     (async () => {
       setLoading(true);
+      setError(null);
       const { username, fromDate, toDate } = searchData;
-      const observationData = await getObservations(
+      const { error, results } = await getObservations(
         username,
         fromDate!,
         toDate!
       );
-      setInvalidData(
-        findInvalidVoucherEntries(observationData, voucherNumFormatCheck)
-      );
-      setData(observationData);
+
+      if (error) {
+        setError(error);
+      }
+
+      setInvalidData(findInvalidVoucherEntries(results, voucherNumFormatCheck));
+      setData(results);
       setLoading(false);
       setHasMadeSearch(true);
     })();
@@ -100,6 +107,14 @@ export const App = () => {
 
     if (!hasMadeSearch) {
       return null;
+    }
+
+    if (error) {
+      return (
+        <Alert severity='error' sx={{ marginTop: '12px' }}>
+          An error occurred. Response from iNat: <b>{error}</b>
+        </Alert>
+      );
     }
 
     if (data.length === 0) {
@@ -204,8 +219,10 @@ export const App = () => {
           </li>
           <li>
             Please contact Elora at{' '}
-            <a href='mailto:eloraadamson@uvic.ca'>eloraadamson@uvic.ca</a> if
-            you have any questions or issues with the process. Thank you!
+            <a href='mailto:eloraadamson@uvic.ca' target='_blank'>
+              eloraadamson@uvic.ca
+            </a>{' '}
+            if you have any questions or issues with the process. Thank you!
           </li>
         </ul>
         <UserFields onSubmit={handleRequestData} disabled={loading} />
